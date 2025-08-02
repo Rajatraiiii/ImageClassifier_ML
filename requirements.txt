@@ -1,6 +1,6 @@
 streamlit
-scikit-learn
 scikit-image
-
+Pillow
 numpy
+scikit-learn
 pandas
