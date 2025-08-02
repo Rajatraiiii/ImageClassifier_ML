@@ -1,41 +1,43 @@
 import streamlit as st
 import numpy as np
-from skimage.io import imread
-from skimage.transform import resize
-import pickle
 from PIL import Image
+from skimage.transform import resize
+import joblib
 
-st.title('Image Classification')
-st.text('Upload an image to classify it as a car or motorcycle')
+# Title
+st.title('Image Classification - Car vs Motorcycle')
+st.text('Upload an image and click Predict')
 
+# Load model
+model = joblib.load('img_model_compressed.pkl')
 
-model = pickle.load(open('img_model.p', 'rb'))
+# Define categories
 CATEGORIES = ['car', 'motorcycle']
 
-
-uploaded_file = st.file_uploader("Choose a JPG image...", type="jpg")
+# File uploader
+uploaded_file = st.file_uploader("Choose a .jpg image", type="jpg")
 
 if uploaded_file is not None:
-    # Display uploaded image
+    # Show image
     img = Image.open(uploaded_file)
     st.image(img, caption='Uploaded Image')
 
-    # Predict on button click
+    # Predict button
     if st.button('PREDICT'):
-        try:
-            img = np.array(img)
-            img_resized = resize(img, (64, 64, 3))  # resize to model input shape
-            flat_data = [img_resized.flatten()]
-            flat_data = np.array(flat_data)
+        st.write('Running prediction...')
+        
+        # Preprocess
+        img = np.array(img)
+        img_resized = resize(img, (150, 150, 3))  # keep original training shape
+        flat_data = [img_resized.flatten()]
+        flat_data = np.array(flat_data)
 
-            # Prediction
-            y_out = model.predict(flat_data)
-            prediction_label = CATEGORIES[y_out[0]]
-            st.success(f'PREDICTED OUTPUT: {prediction_label}')
+        # Predict
+        y_out = model.predict(flat_data)[0]
+        y_proba = model.predict_proba(flat_data)[0]
 
-            # Probability
-            probabilities = model.predict_proba(flat_data)[0]
-            for index, category in enumerate(CATEGORIES):
-                st.write(f'{category} : {probabilities[index]*100:.2f}%')
-        except Exception as e:
-            st.error(f"Error during prediction: {e}")
+        # Show result
+        st.subheader(f'PREDICTED OUTPUT: {CATEGORIES[y_out]}')
+        st.write('Probability:')
+        for index, item in enumerate(CATEGORIES):
+            st.write(f'{item}: {y_proba[index]*100:.2f}%')
