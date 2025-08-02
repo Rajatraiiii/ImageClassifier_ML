@@ -24,7 +24,7 @@ if uploaded_file is not None:
     if st.button('PREDICT'):
         try:
             img = np.array(img)
-            img_resized = resize(img, (150, 150, 3))  # resize to model input shape
+            img_resized = resize(img, (64, 64, 3))  # resize to model input shape
             flat_data = [img_resized.flatten()]
             flat_data = np.array(flat_data)
 
